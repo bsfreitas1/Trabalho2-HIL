@@ -1,0 +1,32 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "cla_example",
+            "type": "ccs-debug",
+            "request": "launch",
+            "projectInfo": {
+                "name": "cla_example",
+                "resourceId": "/cla_example"
+            },
+            "launchSettings": {
+                "coresToLoadForProjectLaunch": [
+                    "C28xx_CPU1"
+                ]
+            },
+            "connections": [
+                {
+                    "name": "Texas Instruments XDS100v2 USB Debug Probe_0",
+                    "cores": [
+                        {
+                            "name": "C28xx_CPU1",
+                            "debuggerSettings": {
+                                "data": "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n<PropertyValues>\n\n  <property id=\"Z1LINKPOINTER1\">\n    <curValue>FFFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z1LINKPOINTER2\">\n    <curValue>FFFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z1LINKPOINTER3\">\n    <curValue>FFFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z1PSWDLOCK\">\n    <curValue>00000FFF</curValue>\n  </property>\n\n  <property id=\"Z1CRCLOCK\">\n    <curValue>00000FFF</curValue>\n  </property>\n\n  <property id=\"Z1OTPBOOTCTRL\">\n    <curValue>FFFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z1GRABSECT\">\n    <curValue>3FFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z1GRABRAM\">\n    <curValue>F000FFFF</curValue>\n  </property>\n\n  <property id=\"Z1EXEONLYSECT\">\n    <curValue>00007FFF</curValue>\n  </property>\n\n  <property id=\"Z1EXEONLYRAM\">\n    <curValue>000000FF</curValue>\n  </property>\n\n  <property id=\"Z2LINKPOINTER1\">\n    <curValue>FFFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z2LINKPOINTER2\">\n    <curValue>FFFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z2LINKPOINTER3\">\n    <curValue>FFFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z2PSWDLOCK\">\n    <curValue>00000FFF</curValue>\n  </property>\n\n  <property id=\"Z2CRCLOCK\">\n    <curValue>00000FFF</curValue>\n  </property>\n\n  <property id=\"Z2OTPBOOTCTRL\">\n    <curValue>FFFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z2GRABSECT\">\n    <curValue>3FFFFFFF</curValue>\n  </property>\n\n  <property id=\"Z2GRABRAM\">\n    <curValue>F000FFFF</curValue>\n  </property>\n\n  <property id=\"Z2EXEONLYSECT\">\n    <curValue>00007FFF</curValue>\n  </property>\n\n  <property id=\"Z2EXEONLYRAM\">\n    <curValue>000000FF</curValue>\n  </property>\n\n  <property id=\"FlashFiles\">\n    <curValue></curValue>\n  </property>\n\n</PropertyValues>\n"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

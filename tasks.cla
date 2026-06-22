@@ -1,0 +1,38 @@
+#include "shared_vars.h"
+
+// Coeficientes do controlador digital (VMC) com sufixo 'f' para precisão de 32 bits
+#define B0 0.001033f
+#define B1 0.000767f
+#define B2 -0.000266f
+#define A1 -1.521886f
+#define A2 0.521886f
+
+#define REF 20.0f
+#define UL  1.0f
+#define LL  0.0f
+
+// Históricos de erro e de controle alocados na RAMLS1 pelo CLA
+float x[3];
+float y[3];
+
+__interrupt void Cla1Task1()
+{
+    // Deslocamento do histórico de erros
+    x[2] = x[1]; 
+    x[1] = x[0]; 
+    x[0] = REF - vo;
+
+    // Deslocamento do histórico de ações de controle
+    y[2] = y[1]; 
+    y[1] = y[0];
+
+    // Execução da equação de diferenças
+    y[0] = (B0 * x[0] + B1 * x[1] + B2 * x[2]) - (A1 * y[1] + A2 * y[2]);
+
+    // Algoritmo de saturação (Limites de duty cycle)
+    if (y[0] > UL) y[0] = UL;
+    if (y[0] < LL) y[0] = LL;
+
+    // Transmite o resultado final para a área de leitura da CPU
+    duty_cycle_cla = y[0];
+}

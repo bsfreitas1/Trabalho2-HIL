@@ -1,0 +1,49 @@
+/**
+ * These arguments were used when this file was generated. They will be automatically applied on subsequent loads
+ * via the GUI or CLI. Run CLI with '--help' for additional information on how to override these arguments.
+ * @cliArgs --board "/boards/LAUNCHXL_F28379D" --device "F2837xD" --part "F2837xD_337ZWT" --package "F2837xD_337ZWT" --context "CPU1" --product "C2000WARE@26.00.00.00"
+ * @v2CliArgs --board "/boards/LAUNCHXL_F28379D" --device "TMS320F28379D" --package "337ZWT" --context "CPU1" --product "C2000WARE@26.00.00.00"
+ * @versions {"tool":"1.27.0+4565"}
+ */
+
+/**
+ * Import the modules used in this configuration.
+ */
+const cla    = scripting.addModule("/driverlib/cla.js", {}, false);
+const cla1   = cla.addInstance();
+const memcfg = scripting.addModule("/driverlib/memcfg.js");
+const sci    = scripting.addModule("/driverlib/sci.js", {}, false);
+const sci1   = sci.addInstance();
+
+/**
+ * Write custom configuration values to the imported modules.
+ */
+cla1.$name             = "myCLA0";
+cla1.enable_CLA_TASK_2 = false;
+cla1.enable_CLA_TASK_4 = false;
+cla1.enable_CLA_TASK_3 = false;
+cla1.enable_CLA_TASK_5 = false;
+cla1.enable_CLA_TASK_6 = false;
+cla1.enable_CLA_TASK_7 = false;
+cla1.enable_CLA_TASK_8 = false;
+cla1.cpuint_CLA_TASK_2 = false;
+cla1.cpuint_CLA_TASK_3 = false;
+cla1.cpuint_CLA_TASK_5 = false;
+cla1.cpuint_CLA_TASK_6 = false;
+cla1.cpuint_CLA_TASK_7 = false;
+cla1.cpuint_CLA_TASK_8 = false;
+cla1.cpuint_CLA_TASK_4 = false;
+
+memcfg.init_MEMCFG_SECT_MSGCPUTOCLA1 = true;
+memcfg.init_MEMCFG_SECT_MSGCLA1TOCPU = true;
+memcfg.config_MEMCFG_SECT_LS1        = "CLA_data";
+memcfg.config_MEMCFG_SECT_LS4        = "CLA_prog";
+memcfg.config_MEMCFG_SECT_LS5        = "CLA_prog";
+
+sci1.useInterrupts         = false;
+sci1.$name                 = "SCI0";
+sci1.sci.$assign           = "SCIA";
+sci1.sci.scirxdPin.$assign = "GPIO43";
+sci1.sci.scitxdPin.$assign = "GPIO42";
+sci1.rxQual.$name          = "myGPIOQUAL0";
+sci1.txQual.$name          = "myGPIOQUAL1";
