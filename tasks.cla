@@ -1,38 +1,43 @@
 #include "shared_vars.h"
 
-// Coeficientes do controlador digital (VMC) com sufixo 'f' para precisão de 32 bits
-#define B0 0.001033f
-#define B1 0.000767f
-#define B2 -0.000266f
-#define A1 -1.521886f
-#define A2 0.521886f
+// Parâmetros exatos do seu modelo PLECS
+#define KP 154.9f
+#define KI 20302.0f
+#define VDC 400.0f
 
-#define REF 20.0f
-#define UL  1.0f
-#define LL  0.0f
+// Coeficientes do Ressonante Ideal (w0 = 2*pi*60, Ts = 1/20000)
+// K1_IDEAL = sin(w0*Ts)/(2*w0)
+#define K1_IDEAL 0.0000249985f
+// K2_IDEAL = 2*cos(w0*Ts)
+#define K2_IDEAL 1.99964473f
 
-// Históricos de erro e de controle alocados na RAMLS1 pelo CLA
-float x[3];
-float y[3];
+// Memórias do controlador (históricos)
+float e_k1;
+float e_k2;
+float S_k1;
+float S_k2;
 
 __interrupt void Cla1Task1()
 {
-    // Deslocamento do histórico de erros
-    x[2] = x[1]; 
-    x[1] = x[0]; 
-    x[0] = REF - vo;
+    // 1. Cálculo do erro
+    float e_k = i_ref - i_meas;
 
-    // Deslocamento do histórico de ações de controle
-    y[2] = y[1]; 
-    y[1] = y[0];
+    // 2. Integrador Ressonante (Equação exata do seu SIL)
+    float S_k = K1_IDEAL * (e_k - e_k2) + K2_IDEAL * S_k1 - S_k2;
 
-    // Execução da equação de diferenças
-    y[0] = (B0 * x[0] + B1 * x[1] + B2 * x[2]) - (A1 * y[1] + A2 * y[2]);
+    // 3. Ação de Controle Proporcional-Ressonante + Feed-forward da Rede
+    float v_ctrl = (KP * e_k) + (KI * S_k) + v_grid_ff;
 
-    // Algoritmo de saturação (Limites de duty cycle)
-    if (y[0] > UL) y[0] = UL;
-    if (y[0] < LL) y[0] = LL;
+    // 4. Modulação (Normalizando pela tensão do barramento DC)
+    duty_cycle_cla = v_ctrl / VDC;
 
-    // Transmite o resultado final para a área de leitura da CPU
-    duty_cycle_cla = y[0];
+    // 5. Saturação da moduladora para proteger o PWM (-1 a 1)
+    if (duty_cycle_cla > 1.0f) duty_cycle_cla = 1.0f;
+    if (duty_cycle_cla < -1.0f) duty_cycle_cla = -1.0f;
+
+    // 6. Atualização das memórias para o próximo ciclo
+    e_k2 = e_k1;
+    e_k1 = e_k;
+    S_k2 = S_k1;
+    S_k1 = S_k;
 }

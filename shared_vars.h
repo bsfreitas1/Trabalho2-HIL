@@ -1,10 +1,12 @@
 #ifndef SHARED_VARS_H_
 #define SHARED_VARS_H_
 
-// Variável atualizada pela CPU com o dado vindo do PLECS
-extern float vo;
+// Variáveis de entrada (recebidas do PLECS via SCI)
+extern float i_meas;
+extern float i_ref;
+extern float v_grid_ff;
 
-// Variável atualizada pelo CLA com o resultado do controlador
+// Variável de saída (calculada pelo CLA)
 extern float duty_cycle_cla;
 
 #endif /* SHARED_VARS_H_ */
