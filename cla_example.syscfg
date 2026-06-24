@@ -9,30 +9,160 @@
 /**
  * Import the modules used in this configuration.
  */
-const cla    = scripting.addModule("/driverlib/cla.js", {}, false);
-const cla1   = cla.addInstance();
-const memcfg = scripting.addModule("/driverlib/memcfg.js");
-const sci    = scripting.addModule("/driverlib/sci.js", {}, false);
-const sci1   = sci.addInstance();
+const adc              = scripting.addModule("/driverlib/adc.js", {}, false);
+const adc1             = adc.addInstance();
+const cla              = scripting.addModule("/driverlib/cla.js", {}, false);
+const cla1             = cla.addInstance();
+const cputimer         = scripting.addModule("/driverlib/cputimer.js", {}, false);
+const cputimer1        = cputimer.addInstance();
+const dac              = scripting.addModule("/driverlib/dac.js", {}, false);
+const dac1             = dac.addInstance();
+const epwm             = scripting.addModule("/driverlib/epwm.js", {}, false);
+const epwm1            = epwm.addInstance();
+const epwm2            = epwm.addInstance();
+const gpio             = scripting.addModule("/driverlib/gpio.js", {}, false);
+const gpio1            = gpio.addInstance();
+const gpio2            = gpio.addInstance();
+const gpio3            = gpio.addInstance();
+const gpio4            = gpio.addInstance();
+const gpio5            = gpio.addInstance();
+const inputxbar_input  = scripting.addModule("/driverlib/inputxbar_input.js", {}, false);
+const inputxbar_input1 = inputxbar_input.addInstance();
+const inputxbar_input2 = inputxbar_input.addInstance();
+const inputxbar_input3 = inputxbar_input.addInstance();
+const inputxbar_input4 = inputxbar_input.addInstance();
+const memcfg           = scripting.addModule("/driverlib/memcfg.js");
+const sci              = scripting.addModule("/driverlib/sci.js", {}, false);
+const sci1             = sci.addInstance();
 
 /**
  * Write custom configuration values to the imported modules.
  */
-cla1.$name             = "myCLA0";
-cla1.enable_CLA_TASK_2 = false;
-cla1.enable_CLA_TASK_4 = false;
-cla1.enable_CLA_TASK_3 = false;
-cla1.enable_CLA_TASK_5 = false;
-cla1.enable_CLA_TASK_6 = false;
-cla1.enable_CLA_TASK_7 = false;
-cla1.enable_CLA_TASK_8 = false;
-cla1.cpuint_CLA_TASK_2 = false;
-cla1.cpuint_CLA_TASK_3 = false;
-cla1.cpuint_CLA_TASK_5 = false;
-cla1.cpuint_CLA_TASK_6 = false;
-cla1.cpuint_CLA_TASK_7 = false;
-cla1.cpuint_CLA_TASK_8 = false;
-cla1.cpuint_CLA_TASK_4 = false;
+adc1.$name                          = "myADC1";
+adc1.adcClockPrescaler              = "ADC_CLK_DIV_4_0";
+adc1.enabledSOCs                    = ["ADC_SOC_NUMBER0"];
+adc1.soc0Trigger                    = "ADC_TRIGGER_EPWM1_SOCA";
+adc1.soc0SampleWindow               = 15;
+adc1.enabledInts                    = ["ADC_INT_NUMBER1"];
+adc1.enableInterrupt1               = true;
+adc1.interruptPulseMode             = "ADC_PULSE_END_OF_CONV";
+adc1.enableInterrupt1ContinuousMode = true;
+
+cla1.$name              = "myCLA0";
+cla1.enable_CLA_TASK_2  = false;
+cla1.enable_CLA_TASK_4  = false;
+cla1.enable_CLA_TASK_3  = false;
+cla1.enable_CLA_TASK_5  = false;
+cla1.enable_CLA_TASK_6  = false;
+cla1.enable_CLA_TASK_7  = false;
+cla1.enable_CLA_TASK_8  = false;
+cla1.cpuint_CLA_TASK_2  = false;
+cla1.cpuint_CLA_TASK_3  = false;
+cla1.cpuint_CLA_TASK_5  = false;
+cla1.cpuint_CLA_TASK_6  = false;
+cla1.cpuint_CLA_TASK_7  = false;
+cla1.cpuint_CLA_TASK_8  = false;
+cla1.cpuint_CLA_TASK_4  = false;
+cla1.trigger_CLA_TASK_1 = "CLA_TRIGGER_ADCA1";
+
+cputimer1.$name                    = "myCPUTIMER0";
+cputimer1.enableInterrupt          = true;
+cputimer1.registerInterrupts       = true;
+cputimer1.startTimer               = true;
+cputimer1.timerPeriod              = 1000;
+cputimer1.timerInt.enableInterrupt = true;
+
+dac1.$name            = "myDAC1";
+dac1.enableOutput     = true;
+dac1.referenceVoltage = "DAC_REF_ADC_VREFHI";
+
+epwm1.$name                                                      = "myEPWM1";
+epwm1.epwmTimebase_counterMode                                   = "EPWM_COUNTER_MODE_UP_DOWN";
+epwm1.epwmTimebase_period                                        = 2500;
+epwm1.epwmCounterCompare_shadowLoadModeCMPA                      = "EPWM_COMP_LOAD_ON_SYNC_CNTR_ZERO_PERIOD";
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_UP_CMPA   = "EPWM_AQ_OUTPUT_LOW";
+epwm1.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_DOWN_CMPA = "EPWM_AQ_OUTPUT_HIGH";
+epwm1.epwmDeadband_polarityFED                                   = "EPWM_DB_POLARITY_ACTIVE_LOW";
+epwm1.epwmDeadband_enableRED                                     = true;
+epwm1.epwmDeadband_enableFED                                     = true;
+epwm1.epwmEventTrigger_EPWM_SOC_A_triggerEnable                  = true;
+epwm1.epwmEventTrigger_EPWM_SOC_A_triggerSource                  = "EPWM_SOC_TBCTR_ZERO";
+epwm1.epwmEventTrigger_EPWM_SOC_A_triggerEventPrescalar          = "1";
+epwm1.epwmDeadband_delayRED                                      = 50;
+epwm1.epwmDeadband_delayFED                                      = 50;
+epwm1.epwm.$assign                                               = "EPWM1";
+epwm1.epwm.epwm_aPin.$assign                                     = "boosterpack1.40";
+epwm1.epwm.epwm_bPin.$assign                                     = "boosterpack1.39";
+scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM1 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", epwm1.epwm, "epwm_aPin");
+scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM1 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", epwm1.epwm, "epwm_bPin");
+
+epwm2.$name                                                      = "myEPWM2";
+epwm2.epwmTimebase_counterMode                                   = "EPWM_COUNTER_MODE_UP_DOWN";
+epwm2.epwmTimebase_period                                        = 2500;
+epwm2.epwmCounterCompare_shadowLoadModeCMPA                      = "EPWM_COMP_LOAD_ON_SYNC_CNTR_ZERO_PERIOD";
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_UP_CMPA   = "EPWM_AQ_OUTPUT_LOW";
+epwm2.epwmActionQualifier_EPWM_AQ_OUTPUT_A_ON_TIMEBASE_DOWN_CMPA = "EPWM_AQ_OUTPUT_HIGH";
+epwm2.epwmDeadband_polarityFED                                   = "EPWM_DB_POLARITY_ACTIVE_LOW";
+epwm2.epwmDeadband_enableRED                                     = true;
+epwm2.epwmDeadband_enableFED                                     = true;
+epwm2.epwmDeadband_delayRED                                      = 50;
+epwm2.epwmDeadband_delayFED                                      = 50;
+epwm2.epwm.$assign                                               = "EPWM2";
+epwm2.epwm.epwm_aPin.$assign                                     = "boosterpack1.38";
+epwm2.epwm.epwm_bPin.$assign                                     = "boosterpack1.37";
+scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM2 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", epwm2.epwm, "epwm_aPin");
+scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM2 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", epwm2.epwm, "epwm_bPin");
+
+gpio1.$name           = "myGPIO1";
+gpio1.useInterrupt    = true;
+gpio1.gpioPin.$assign = "boosterpack2.80";
+gpio1.xint.enableInt  = true;
+gpio1.xint.intType    = "GPIO_INT_TYPE_BOTH_EDGES";
+scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM4 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", gpio1, "gpioPin");
+
+gpio2.$name           = "myGPIO2";
+gpio2.useInterrupt    = true;
+gpio2.gpioPin.$assign = "boosterpack2.79";
+gpio2.xint.xintNum    = "GPIO_INT_XINT2";
+gpio2.xint.intType    = "GPIO_INT_TYPE_BOTH_EDGES";
+gpio2.xint.enableInt  = true;
+scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM4 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", gpio2, "gpioPin");
+
+gpio3.$name           = "myGPIO3";
+gpio3.useInterrupt    = true;
+gpio3.gpioPin.$assign = "boosterpack2.78";
+gpio3.xint.xintNum    = "GPIO_INT_XINT3";
+gpio3.xint.enableInt  = true;
+gpio3.xint.intType    = "GPIO_INT_TYPE_BOTH_EDGES";
+scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM5 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", gpio3, "gpioPin");
+
+gpio4.$name           = "myGPIO4";
+gpio4.useInterrupt    = true;
+gpio4.gpioPin.$assign = "boosterpack2.77";
+gpio4.xint.xintNum    = "GPIO_INT_XINT4";
+gpio4.xint.enableInt  = true;
+gpio4.xint.intType    = "GPIO_INT_TYPE_BOTH_EDGES";
+scripting.suppress("Connected to hardware,@@@.+?@@@ is connected to EPWM5 BP on the LaunchPad F28379D\\. Consider selecting it in \'use hardware\' above\\. @@@.+?@@@", gpio4, "gpioPin");
+
+gpio5.$name           = "PINO_DEBUG_FREQ_CLA";
+gpio5.direction       = "GPIO_DIR_MODE_OUT";
+gpio5.gpioPin.$assign = "boosterpack1.8";
+
+gpio1.xint.inputxbar           = inputxbar_input1;
+inputxbar_input1.$name         = "myINPUTXBARINPUT1";
+inputxbar_input1.inputxbarGpio = "GPIO6";
+
+gpio2.xint.inputxbar           = inputxbar_input2;
+inputxbar_input2.$name         = "myINPUTXBARINPUT2";
+inputxbar_input2.inputxbarGpio = "GPIO7";
+
+gpio3.xint.inputxbar           = inputxbar_input3;
+inputxbar_input3.$name         = "myINPUTXBARINPUT3";
+inputxbar_input3.inputxbarGpio = "GPIO8";
+
+gpio4.xint.inputxbar           = inputxbar_input4;
+inputxbar_input4.$name         = "myINPUTXBARINPUT4";
+inputxbar_input4.inputxbarGpio = "GPIO9";
 
 memcfg.init_MEMCFG_SECT_MSGCPUTOCLA1 = true;
 memcfg.init_MEMCFG_SECT_MSGCLA1TOCPU = true;

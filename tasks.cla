@@ -1,41 +1,51 @@
 #include "shared_vars.h"
+#include "board.h"
+#include <stdint.h>
 
-// Parâmetros exatos do seu modelo PLECS
-#define KP 154.9f
-#define KI 20302.0f
-#define VDC 400.0f
+#define KP          34.9f
+#define KI          20302.0f
+#define VDC         400.0f
+#define TBPRD_VAL   2500.0f
+#define K1_IDEAL    0.0000249985f
+#define K2_IDEAL    1.99964473f
 
-// Coeficientes do Ressonante Ideal (w0 = 2*pi*60, Ts = 1/20000)
-// K1_IDEAL = sin(w0*Ts)/(2*w0)
-#define K1_IDEAL 0.0000249985f
-// K2_IDEAL = 2*cos(w0*Ts)
-#define K2_IDEAL 1.99964473f
-
-// Memórias do controlador (históricos)
+// Inicialização zerada para evitar lixo de memória na primeira execução
+#pragma DATA_SECTION(e_k1, "CLADataLS0")
 float e_k1;
+
+#pragma DATA_SECTION(e_k2, "CLADataLS0")
 float e_k2;
+
+#pragma DATA_SECTION(S_k1, "CLADataLS0")
 float S_k1;
+
+#pragma DATA_SECTION(S_k2, "CLADataLS0")
 float S_k2;
 
 __interrupt void Cla1Task1()
 {
-    // 1. Cálculo do erro
+    // Leitura do ADC usando Driverlib
+    adc_raw = ADC_readResult(myADC1_RESULT_BASE, myADC1_SOC0);
+    i_meas = ((float)adc_raw - 2048.0f) / 102.4f;
+
+    // Controle
     float e_k = i_ref - i_meas;
-
-    // 2. Integrador Ressonante (Equação exata do seu SIL)
     float S_k = K1_IDEAL * (e_k - e_k2) + K2_IDEAL * S_k1 - S_k2;
-
-    // 3. Ação de Controle Proporcional-Ressonante + Feed-forward da Rede
     float v_ctrl = (KP * e_k) + (KI * S_k) + v_grid_ff;
 
-    // 4. Modulação (Normalizando pela tensão do barramento DC)
     duty_cycle_cla = v_ctrl / VDC;
-
-    // 5. Saturação da moduladora para proteger o PWM (-1 a 1)
-    if (duty_cycle_cla > 1.0f) duty_cycle_cla = 1.0f;
+    if (duty_cycle_cla >  1.0f) duty_cycle_cla =  1.0f;
     if (duty_cycle_cla < -1.0f) duty_cycle_cla = -1.0f;
 
-    // 6. Atualização das memórias para o próximo ciclo
+    uint16_t cmpa1 = (uint16_t)(TBPRD_VAL * (0.5f + 0.5f * duty_cycle_cla));
+    uint16_t cmpa2 = (uint16_t)(TBPRD_VAL * (0.5f - 0.5f * duty_cycle_cla));
+
+    EPWM_setCounterCompareValue(myEPWM1_BASE, EPWM_COUNTER_COMPARE_A, cmpa1);
+    EPWM_setCounterCompareValue(myEPWM2_BASE, EPWM_COUNTER_COMPARE_A, cmpa2);
+
+    ADC_clearInterruptStatus(myADC1_BASE, ADC_INT_NUMBER1);
+
+    // Atualização de estados
     e_k2 = e_k1;
     e_k1 = e_k;
     S_k2 = S_k1;
