@@ -25,11 +25,14 @@ float i_ref = 0.0f;
 #pragma DATA_SECTION(v_grid_ff,     "CpuToCla1MsgRAM")
 float v_grid_ff = 0.0f;
 
-#pragma DATA_SECTION(X_scale,       "CpuToCla1MsgRAM")
-float X_scale = 1.0f;
 
-#pragma DATA_SECTION(I_PEAK_BASE,   "CpuToCla1MsgRAM")
+float Vinv_k = 0.0f;
+float Vinv_avg = 0.0f;
+uint16_t Vinv_count = 0;
+float X_scale = 1.0f;
 float I_PEAK_BASE = 12.0f;
+
+
 
 // ==========================================================
 // PARAMETROS DA PLANTA HIL
@@ -76,12 +79,28 @@ float log_power[LOG_SIZE];    // Potencia ativa media movel (W)
                                // p_media[k] = media(vg*ig) nos ultimos
                                // WINDOW_SIZE amostras
 
-// Estado do log
-uint16_t condicao_de_disparo = 0;
+// NOVO: log bruto dos 4 sinais de chaveamento, para diagnostico do
+// caminho EPWM -> GPIO -> Vinv_k. Empacotado em bits: s1|s2<<1|s3<<2|s4<<3
+// Precisa de um bloco GS livre no .cmd (ex: ramgs4). Se nao existir,
+// ajuste para outro bloco disponivel ou reduza LOG_SIZE de outro buffer.
+#pragma DATA_SECTION(log_s, "ramgs8")
+uint16_t log_s[LOG_SIZE];
+
+
+
+volatile uint16_t dbg_s1 = 0;
+volatile uint16_t dbg_s2 = 0;
+volatile uint16_t dbg_s3 = 0;
+volatile uint16_t dbg_s4 = 0;
+
 uint16_t log_index  = 0;
-uint16_t enable_log = 1;  // 1: gravando | 0: buffer cheio (trava)
-                           // Para regravar: setar enable_log=1 e log_index=0
-                           // no Watch Window do CCS
+uint16_t enable_log = 1;  
+
+uint16_t condicao_de_disparo = 0;
+uint16_t teste_protecao = 0;
+uint16_t reset_trip = 0;  
+
+
 
 // ==========================================================
 // VARIAVEIS DE ESTADO DA PLANTA
@@ -99,7 +118,7 @@ __interrupt void cla1Isr1(void);
 // ==========================================================
 __interrupt void INT_myCPUTIMER0_ISR(void)
 {
-    
+   
     // Le sinais de chaveamento (saidas do ePWM -> GPIOs 6-9)
     uint16_t s1 = GPIO_readPin(6);
     uint16_t s2 = GPIO_readPin(7);
@@ -107,9 +126,22 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
     uint16_t s4 = GPIO_readPin(9);
 
     // Tensao de saida do inversor (modelo de chaves ideais)
-    float Vinv_k = 0.0f;
-    if      (s1 && s4) Vinv_k =  VDC;
-    else if (s2 && s3) Vinv_k = -VDC;
+    Vinv_k = 0.0f;
+    float V_A = s1 ? VDC : 0.0f;
+    float V_B = s3 ? VDC : 0.0f;
+    Vinv_k = V_A - V_B;
+
+    // Adicione variável global:
+    Vinv_avg += Vinv_k;  
+    Vinv_count++;
+
+    
+    static uint16_t plant_log_idx = 0;
+    if (plant_log_idx < LOG_SIZE)
+    {
+        log_s[plant_log_idx] = s1 | (s2 << 1) | (s3 << 2) | (s4 << 3);
+        plant_log_idx++;
+    }
 
     // Tensao da rede e referencia de corrente (sincronizados)
     float sin_theta = sinf(theta);
@@ -123,7 +155,13 @@ __interrupt void INT_myCPUTIMER0_ISR(void)
     float ig_k = (PHI_1 * ig_k1)
                + (PHI_2 * (Vinv_k + Vinv_k1 - vg_k - vg_k1));
 
-    // Publica tensao da rede para feed-forward na CLA
+
+    if ((EPWM_getTripZoneFlagStatus(myEPWM1_BASE) & EPWM_TZ_FLAG_OST) != 0)
+    {
+        ig_k = 0.0f;
+    }
+
+
     v_grid_ff = vg_k;
 
     // Converte corrente para DAC e atualiza saida
@@ -150,6 +188,22 @@ void main(void)
     Interrupt_initVectorTable();
     Board_init();
 
+     
+
+    // Garante que DAC começa em zero (corrente zero = 2048 counts)
+    DAC_setShadowValue(myDAC1_BASE, 2048);
+    
+
+    // Limpa latch do CMPSS e trip zone após DAC estabilizar
+    CMPSS_clearFilterLatchHigh(myCMPSS0_BASE);
+    CMPSS_clearFilterLatchLow(myCMPSS0_BASE);
+    EPWM_clearTripZoneFlag(myEPWM1_BASE, EPWM_TZ_FLAG_OST);
+    EPWM_clearTripZoneFlag(myEPWM2_BASE, EPWM_TZ_FLAG_OST);
+
+    
+
+    
+
     // Parametros iniciais (Cenario 1: 1 pu de potencia ativa)
     X_scale     = 1.0f;
     I_PEAK_BASE = 12.5f;  // Ipk nominal = Pn/(Vg_rms) * sqrt(2) = 2000/220 * 1.414 = 12.86 A
@@ -160,13 +214,42 @@ void main(void)
     while (1)
     {
         
+        
+        
+
+        
+
         if (condicao_de_disparo == 1) 
         {
             enable_log = 1;
             log_index = 0;
             DEVICE_DELAY_US(25000);
-            X_scale = 0.5f;     
+            X_scale = 0.5f;
+            DEVICE_DELAY_US(25000);
+            X_scale = 1.0f;     
             condicao_de_disparo = 0;
+        }
+
+        if (teste_protecao == 1) 
+        {
+            
+            enable_log = 1;
+            log_index = 0;
+            DEVICE_DELAY_US(25000);
+            X_scale = 1.6f;     
+            teste_protecao = 0;
+            DEVICE_DELAY_US(25000);
+            X_scale = 1.0f;
+        }
+
+        if (reset_trip == 1)
+        {
+            CMPSS_clearFilterLatchHigh(myCMPSS0_BASE);
+            CMPSS_clearFilterLatchLow(myCMPSS0_BASE);
+            EPWM_clearTripZoneFlag(myEPWM1_BASE, EPWM_TZ_FLAG_OST | EPWM_TZ_FLAG_DCAEVT1);
+            EPWM_clearTripZoneFlag(myEPWM2_BASE, EPWM_TZ_FLAG_OST | EPWM_TZ_FLAG_DCAEVT1);
+            reset_trip = 0;
+            enable_log = 1;
         }
         
     }
@@ -199,7 +282,9 @@ __interrupt void cla1Isr1(void)
 
         // Grava no buffer de log
         log_ig   [log_index] = i_meas;
-        log_vg   [log_index] = v_grid_ff;
+        log_vg[log_index] = (Vinv_count > 0) ? (Vinv_avg / (float)Vinv_count) : 0.0f;
+        Vinv_avg   = 0.0f;
+        Vinv_count = 0;
         log_iref [log_index] = i_ref;
         log_power[log_index] = running_sum / (float)WINDOW_SIZE;
 

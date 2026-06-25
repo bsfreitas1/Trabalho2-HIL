@@ -37,11 +37,11 @@ __interrupt void Cla1Task1()
     if (duty_cycle_cla >  1.0f) duty_cycle_cla =  1.0f;
     if (duty_cycle_cla < -1.0f) duty_cycle_cla = -1.0f;
 
-    uint16_t cmpa1 = (uint16_t)(TBPRD_VAL * (0.5f + 0.5f * duty_cycle_cla));
-    uint16_t cmpa2 = (uint16_t)(TBPRD_VAL * (0.5f - 0.5f * duty_cycle_cla));
+    
+    uint16_t cmpa = (uint16_t)(TBPRD_VAL * (0.5f + 0.5f * duty_cycle_cla));
 
-    EPWM_setCounterCompareValue(myEPWM1_BASE, EPWM_COUNTER_COMPARE_A, cmpa1);
-    EPWM_setCounterCompareValue(myEPWM2_BASE, EPWM_COUNTER_COMPARE_A, cmpa2);
+    EPWM_setCounterCompareValue(myEPWM1_BASE, EPWM_COUNTER_COMPARE_A, cmpa);
+    EPWM_setCounterCompareValue(myEPWM2_BASE, EPWM_COUNTER_COMPARE_A, cmpa);
 
     ADC_clearInterruptStatus(myADC1_BASE, ADC_INT_NUMBER1);
 

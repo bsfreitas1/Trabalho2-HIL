@@ -33,11 +33,7 @@ PAGE 1 :
    RAMGS1          : origin = 0x00D000, length = 0x001000  /* log_vg    */
    RAMGS2          : origin = 0x00E000, length = 0x001000  /* log_iref  */
    RAMGS3          : origin = 0x00F000, length = 0x001000  /* log_power */
-
-   RAMGS4          : origin = 0x010000, length = 0x001000
-   RAMGS5          : origin = 0x011000, length = 0x001000
-   RAMGS6          : origin = 0x012000, length = 0x001000
-   RAMGS7          : origin = 0x013000, length = 0x001000
+   RAMGS4_7        : origin = 0x010000, length = 0x004000
    RAMGS8          : origin = 0x014000, length = 0x001000
    RAMGS9          : origin = 0x015000, length = 0x001000
    RAMGS10         : origin = 0x016000, length = 0x001000
@@ -64,7 +60,7 @@ PAGE 1 :
 SECTIONS
 {
    codestart        : > BEGIN,    PAGE = 0
-   .text            : >> RAMGS4 | RAMGS5 | RAMGS6 | RAMGS7, PAGE = 1
+   .text            : > RAMGS4_7, PAGE = 1
    .cinit           : > RAMM0,   PAGE = 0
    .switch          : > RAMM0,   PAGE = 0
    .reset           : > RESET,   PAGE = 0, TYPE = DSECT
@@ -77,13 +73,14 @@ SECTIONS
    ramgs1           : > RAMGS1,  PAGE = 1   /* log_vg    */
    ramgs2           : > RAMGS2,  PAGE = 1   /* log_iref  */
    ramgs3           : > RAMGS3,  PAGE = 1   /* log_power */
+   ramgs8           : > RAMGS8,  PAGE = 1   /* log_power */
 
 #if defined(__TI_EABI__)
    .bss             : > RAMLS2,  PAGE = 1
    .bss:output      : > RAMLS2,  PAGE = 1
    .init_array      : > RAMM0,   PAGE = 0
    .const           : > RAMLS3,  PAGE = 1
-   .data            : > RAMLS3,  PAGE = 1
+   .data           : >> RAMLS2 | RAMLS3, PAGE = 1
    .sysmem          : > RAMLS3,  PAGE = 1
 #else
    .pinit           : > RAMM0,   PAGE = 0
